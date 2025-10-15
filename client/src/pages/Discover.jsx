@@ -26,8 +26,8 @@ const Discover = () => {
       <div className='max-w-6xl mx-auto p-6'>
         {/* Title */}
         <div className='mb-8'>
-          <h1 className='text-3xl font-bold text-slate-900 mb-2'>Discover People</h1>
-          <p className='text-slate-600'>Connect with amazing people and grow your network</p>
+          <h1 className='text-3xl font-bold text-slate-900 mb-2'>Khám Phá</h1>
+          <p className='text-slate-600'>Kết nối với những người tuyệt vời và mở rộng mạng lưới của bạn</p>
         </div>
         {/* Search */}
         <div className='mb-8 shadow-md rounded-md border border-slate-200/60 bg-white/80'>
@@ -38,7 +38,7 @@ const Discover = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyUp={handleSearch}
-                placeholder='Search people by name, username, bio or location...'
+                placeholder='Tìm kiếm người dùng...'
                 className='pl-10 sm:pl-12 py-2 w-full border border-gray-300 rounded-md 
                 focus:outline-none  max-sm:text-sm' />
             </div>

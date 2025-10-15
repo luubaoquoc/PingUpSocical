@@ -25,7 +25,7 @@ const Sidebar = ({ sidebarOpen, setSideBarOpen }) => {
         bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-700 hover:to-purple-800
         active:scale-95 transition text-white cursor-pointer'>
           <CirclePlus className='w-5 h-5' />
-          Create Post
+          <span className='text-xl font-bold'>Đăng bài</span>
         </Link>
       </div>
 

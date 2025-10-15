@@ -11,8 +11,8 @@ const Messages = () => {
       <div className='max-w-6xl mx-auto p-6'>
         {/* Title */}
         <div className='mb-8'>
-          <h1 className='text-3xl font-bold text-slate-900 mb-2'>Messages</h1>
-          <p className='text-slate-600'>Talk to your friends and family</p>
+          <h1 className='text-3xl font-bold text-slate-900 mb-2'>Tin nhắn</h1>
+          <p className='text-slate-600'>Nói chuyện với bạn bè và gia đình của bạn</p>
         </div>
 
         {/* Connected Users */}

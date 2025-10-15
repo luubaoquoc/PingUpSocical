@@ -16,11 +16,11 @@ export const assets = {
 }
 
 export const menuItemsData = [
-    { to: '/', label: 'Feed', Icon: Home },
-    { to: '/messages', label: 'Messages', Icon: MessageCircle },
-    { to: '/connections', label: 'Connections', Icon: Users },
-    { to: '/discover', label: 'Discover', Icon: Search },
-    { to: '/profile', label: 'Profile', Icon: UserIcon },
+    { to: '/', label: 'Trang Chủ', Icon: Home },
+    { to: '/messages', label: 'Tin Nhắn', Icon: MessageCircle },
+    { to: '/connections', label: 'Bạn Bè', Icon: Users },
+    { to: '/discover', label: 'Khám Phá', Icon: Search },
+    { to: '/profile', label: 'Hồ Sơ', Icon: UserIcon },
 ];
 
 export const dummyUserData = {

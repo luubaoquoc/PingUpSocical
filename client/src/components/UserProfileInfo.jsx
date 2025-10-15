@@ -24,7 +24,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
               border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-lg font-medium
               transition-colors mt-4 md:mt-0 cursor-pointer active:scale-95'>
                 <Edit className='size-4' />
-                Edit
+                <span className='text-sm text-gray-700'>Cập nhật</span>
               </button>
             )}
           </div>
