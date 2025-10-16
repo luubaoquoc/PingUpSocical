@@ -1,0 +1,25 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import connectDB from './configs/db.js';
+import { serve } from "inngest/express";
+import { inngest, functions } from "./inngest/index.js";
+dotenv.config();
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+
+await connectDB();
+
+app.use(express.json());
+app.use(cors());
+
+app.use("/api/inngest", serve({ client: inngest, functions }));
+
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
+});
