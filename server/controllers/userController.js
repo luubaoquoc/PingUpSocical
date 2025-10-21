@@ -1,6 +1,8 @@
 
 import imagekit from "../configs/imageKit.js";
+import { inngest } from "../inngest/index.js";
 import Connection from "../models/Connection.js";
+import Post from "../models/Post.js";
 import User from "../models/User.js";
 import fs from "fs";
 
@@ -183,9 +185,14 @@ export const sendConnectionRequest = async (req, res) => {
     });
 
     if (!connection) {
-      await Connection.create({
+      const newConnection = await Connection.create({
         from_user_id: userId,
         to_user_id: id,
+      });
+
+      await inngest.send({
+        name: "aap/connection-request",
+        data: { connectionId: newConnection._id },
       });
       return res.status(200).json({ success: true, message: "Gửi lời mời kết bạn thành công" });
     } else if (connection && connection.status === "accepted") {
@@ -254,6 +261,25 @@ export const acceptConnectionRequest = async (req, res) => {
     await connection.save();
 
     res.status(200).json({ success: true, user, message: "Chấp nhận lời mời kết bạn thành công" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
+  }
+}
+
+
+// Lấy hồ sơ người dùng
+export const getUserProfiles = async (req, res) => {
+  try {
+    const { profileId } = req.body;
+    const profile = await User.findById(profileId);
+
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Người dùng không tồn tại" });
+    }
+
+    const posts = await Post.find({ user: profileId }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, profile, posts });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
