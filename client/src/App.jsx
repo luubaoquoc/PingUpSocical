@@ -7,13 +7,22 @@ import Connections from './pages/Connections'
 import Discover from './pages/Discover'
 import Profile from './pages/Profile'
 import Messages from './pages/Messages'
-import { useUser } from '@clerk/clerk-react'
+import { useUser, useAuth } from '@clerk/clerk-react'
 import Layout from './pages/Layout'
 import { Toaster } from 'react-hot-toast'
 import CreatePost from './pages/CreatePost'
+import { useEffect } from 'react'
 
 const App = () => {
   const { user } = useUser()
+  const { getToken } = useAuth()
+
+  useEffect(() => {
+    if (user) {
+      getToken().then((token) => console.log(token)
+      )
+    }
+  }, [user])
   return (
     <>
       <Toaster />
