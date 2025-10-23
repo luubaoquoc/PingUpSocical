@@ -5,7 +5,7 @@ import { getChatMessages, sendMessage, sseControler } from '../controllers/messa
 
 const messageRouter = express.Router();
 
-messageRouter.get('/:userId', protect, sseControler);
+messageRouter.get('/:userId', sseControler);
 messageRouter.post('/send', protect, upload.single('image'), sendMessage);
 messageRouter.post('/get', protect, getChatMessages);
 

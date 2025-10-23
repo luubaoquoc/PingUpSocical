@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { dummyPostsData, dummyUserData } from '../assets/assets'
 import Loading from '../components/Loading'
 import UserProfileInfo from '../components/UserProfileInfo'
 import Postcard from '../components/Postcard'
 import moment from 'moment'
 import ProfileModal from '../components/ProfileModal'
+import { useAuth } from '@clerk/clerk-react'
+import toast from 'react-hot-toast'
+import api from '../api/axios'
+import { useSelector } from 'react-redux'
 
 const Profile = () => {
 
+  const currentUser = useSelector((state) => state.user.value)
+
+  const { getToken } = useAuth()
   const { profileId } = useParams()
   const [user, setUser] = useState(null)
   const [posts, setPosts] = useState([])
@@ -16,21 +22,45 @@ const Profile = () => {
   const [showEdit, setShowEdit] = useState(false)
 
 
-  const fetchUserData = async () => {
-    setUser(dummyUserData)
-    setPosts(dummyPostsData)
+  const fetchUserData = async (profileId) => {
+    const token = await getToken()
+    console.log(token);
+    try {
+      const { data } = await api.post(`/api/user/profiles`, { profileId }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (data.success) {
+        setUser(data.profile)
+        setPosts(data.posts)
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   useEffect(() => {
-    fetchUserData()
-  }, [])
+    if (profileId) {
+      fetchUserData(profileId)
+    } else {
+      fetchUserData(currentUser._id)
+    }
+  }, [profileId, currentUser])
+
+  console.log(posts);
+
+
+
 
   return user ? (
     <div className='relative h-full overflow-y-scroll bg-gray-50 p-6'>
       <div className='max-w-3xl mx-auto'>
         <div className='bg-white rounded-2xl shadow overflow-hidden'>
           {/* Cover Photo */}
-          <div className='h-40 md:h-56 bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200'>
+          <div className='h-40 md:h-56 bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 w-full'>
             {user.cover_photo && <img src={user.cover_photo} alt="cover"
               className='w-full h-full object-cover' />}
           </div>

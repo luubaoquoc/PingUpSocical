@@ -5,7 +5,7 @@ import Message from '../models/Messages.js';
 const connections = {}
 
 export const sseControler = (req, res) => {
-  const userId = req.userId;
+  const userId = req.params.userId;
   console.log('New client connected: ', userId);
 
   // set SSE headers
@@ -63,7 +63,7 @@ export const sendMessage = async (req, res) => {
       media_url,
     });
 
-    res.status(201).json({ message: 'Message sent successfully', message });
+    res.status(201).json({ success: true, message });
 
     const messageWithUserData = await Message.findById(message._id)
       .populate('from_user_id');

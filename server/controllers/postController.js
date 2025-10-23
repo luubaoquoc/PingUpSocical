@@ -44,7 +44,7 @@ export const addPost = async (req, res) => {
       post_type,
     });
 
-    res.status(201).json({ success: true, message: "Bài viết đã được tạo thành công" });
+    res.json({ success: true, message: "Bài viết đã được tạo thành công" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
@@ -61,7 +61,7 @@ export const getFeedPosts = async (req, res) => {
     const posts = await Post.find({ user: { $in: userIds } }).populate("user").sort({
       createdAt: -1
     });
-    res.status(200).json({ success: true, posts });
+    res.json({ success: true, posts });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
@@ -80,11 +80,11 @@ export const likePost = async (req, res) => {
     if (post.like_count.includes(userId)) {
       post.like_count = post.like_count.filter(user => user !== userId);
       await post.save();
-      res.status(200).json({ success: true, message: "Bỏ thích bài viết thành công" });
+      res.json({ success: true, message: "Bỏ thích bài viết thành công" });
     } else {
       post.like_count.push(userId);
       await post.save();
-      res.status(200).json({ success: true, message: "Thích bài viết thành công" });
+      res.json({ success: true, message: "Thích bài viết thành công" });
     }
 
 

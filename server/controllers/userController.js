@@ -16,7 +16,7 @@ export const getUserData = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "Người dùng không tồn tại" });
     }
-    res.status(200).json({ success: true, user });
+    res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
   }
@@ -72,7 +72,7 @@ export const updateUserData = async (req, res) => {
       const buffer = fs.readFileSync(cover.path)
       const response = await imagekit.upload({
         file: buffer,
-        fileName: profile.originalname,
+        fileName: cover.originalname,
       })
 
       const url = imagekit.url({
@@ -86,8 +86,10 @@ export const updateUserData = async (req, res) => {
       updateData.cover_photo = url;
     }
 
+
+
     const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
-    res.status(200).json({ success: true, user, message: "Hồ sơ cập nhật thành công" });
+    res.json({ success: true, user, message: "Hồ sơ cập nhật thành công" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
   }
@@ -109,7 +111,7 @@ export const discoverUsers = async (req, res) => {
       }
     )
     const filteredUsers = allUsers.filter(user => user._id !== userId);
-    res.status(200).json({ success: true, users: filteredUsers, message: "Lấy người dùng thành công" });
+    res.json({ success: true, users: filteredUsers, message: "Lấy người dùng thành công" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
   }
@@ -133,7 +135,7 @@ export const followUser = async (req, res) => {
     const toUser = await User.findById(id);
     toUser.followers.push(userId);
     await toUser.save();
-    res.status(200).json({ success: true, user, message: "Theo dõi người dùng thành công" });
+    res.json({ success: true, user, message: "Theo dõi người dùng thành công" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
   }
@@ -154,7 +156,7 @@ export const unfollowUser = async (req, res) => {
     toUser.followers = toUser.followers.filter(follower => follower !== userId);
     await toUser.save();
 
-    res.status(200).json({ success: true, user, message: "Hủy theo dõi người dùng thành công" });
+    res.json({ success: true, user, message: "Hủy theo dõi người dùng thành công" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
   }
@@ -174,7 +176,7 @@ export const sendConnectionRequest = async (req, res) => {
     });
 
     if (connectionRequests.length >= 20) {
-      return res.status(400).json({ success: false, message: "Bạn đã gửi quá nhiều lời mời kết bạn trong 24 giờ qua. Vui lòng thử lại sau." });
+      return res.json({ success: false, message: "Bạn đã gửi quá nhiều lời mời kết bạn trong 24 giờ qua. Vui lòng thử lại sau." });
     }
 
     const connection = await Connection.findOne({
@@ -194,14 +196,12 @@ export const sendConnectionRequest = async (req, res) => {
         name: "aap/connection-request",
         data: { connectionId: newConnection._id },
       });
-      return res.status(200).json({ success: true, message: "Gửi lời mời kết bạn thành công" });
+      return res.json({ success: true, message: "Gửi lời mời kết bạn thành công" });
     } else if (connection && connection.status === "accepted") {
-      return res.status(400).json({ success: false, message: "Đã tồn tại lời mời kết bạn giữa hai người dùng" });
+      return res.json({ success: false, message: "Đã tồn tại lời mời kết bạn giữa hai người dùng" });
     }
-    return res.status(400).json({ success: false, message: "Đã tồn tại lời mời kết bạn giữa hai người dùng" });
+    return res.json({ success: false, message: "Đã tồn tại lời mời kết bạn giữa hai người dùng" });
   } catch (error) {
-    console.log(error);
-
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
   }
 }
@@ -213,16 +213,19 @@ export const getConnectionRequest = async (req, res) => {
 
     const user = await User.findById(userId).populate('connections followers following');
 
-    const connections = user.connections;
-    const followers = user.followers;
-    const following = user.following;
+    const connections = user.connections || [];
+    const followers = user.followers || [];
+    const following = user.following || [];
 
-    const pendingConnections = await Connection.find({
-      to_user_id: userId, status: 'pending'
-    }).populate('from_user_id').map(conn =>
-      conn.from_user_id);
+    // ✅ chờ populate xong, sau đó mới map
+    const pendingConnectionsDocs = await Connection.find({
+      to_user_id: userId,
+      status: 'pending'
+    }).populate('from_user_id');
 
-    res.status(200).json({
+    const pendingConnections = pendingConnectionsDocs.map(conn => conn.from_user_id);
+
+    res.json({
       success: true,
       connections,
       followers,
@@ -232,10 +235,10 @@ export const getConnectionRequest = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
   }
-}
+};
 
 // Chấp nhận lời mời kết bạn
 export const acceptConnectionRequest = async (req, res) => {
@@ -278,7 +281,7 @@ export const getUserProfiles = async (req, res) => {
       return res.status(404).json({ success: false, message: "Người dùng không tồn tại" });
     }
 
-    const posts = await Post.find({ user: profileId }).sort({ createdAt: -1 });
+    const posts = await Post.find({ user: profileId }).populate("user");
     res.status(200).json({ success: true, profile, posts });
   } catch (error) {
     console.log(error);

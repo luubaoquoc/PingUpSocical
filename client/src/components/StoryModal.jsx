@@ -1,6 +1,8 @@
+import { useAuth } from '@clerk/clerk-react'
 import { ArrowLeft, Sparkle, TextIcon, Upload } from 'lucide-react'
 import React, { useState } from 'react'
 import toast from 'react-hot-toast'
+import api from '../api/axios'
 
 const StoryModal = ({ setShowModal, fetchStories }) => {
 
@@ -12,17 +14,79 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
   const [media, setMedia] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
 
+  const { getToken } = useAuth()
+
+  const MAX_VIDEO_DURATION = 30; // in seconds
+  const MAX_VIDEO_SIZE = 50; // 50 MB
 
   const handleMediaUpload = (e) => {
     const file = e.target.files?.[0]
     if (file) {
-      setMedia(file)
-      setPreviewUrl(URL.createObjectURL(file))
+      if (file.type.startsWith('video/')) {
+        if (file.size > MAX_VIDEO_SIZE * 1024 * 1024) {
+          toast.error(`File video không được vượt quá ${MAX_VIDEO_SIZE} MB.`)
+          setMedia(null)
+          setPreviewUrl(null)
+          return;
+        }
+        const video = document.createElement('video')
+
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+          window.URL.revokeObjectURL(video.src);
+          if (video.duration > MAX_VIDEO_DURATION) {
+            toast.error(`Video không được dài quá ${MAX_VIDEO_DURATION} giây.`)
+            setMedia(null)
+            setPreviewUrl(null)
+          } else {
+            setMedia(file)
+            setPreviewUrl(URL.createObjectURL(file))
+            setText("")
+            setMode('media')
+          }
+        }
+
+        video.src = URL.createObjectURL(file)
+      } else if (file.type.startsWith('image/')) {
+        setMedia(file)
+        setPreviewUrl(URL.createObjectURL(file))
+        setText("")
+        setMode('media')
+      }
     }
   }
 
   const handleCreateStory = async () => {
+    const media_type = mode === 'media' ? media?.type.startsWith('image') ? 'image' : 'video' : 'text';
 
+    if (media_type === 'text' && !text) {
+      throw new Error("Vui lòng nhập một vài chữ cho tin của bạn.")
+    }
+
+    let formData = new FormData();
+    formData.append('content', text);
+    formData.append('media_type', media_type);
+    formData.append('media', media);
+    formData.append('background_color', background);
+
+    const token = await getToken()
+    try {
+      const { data } = await api.post('/api/story/create', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      if (data.success) {
+        setShowModal(false)
+        toast.success('Tin của bạn đã được tạo thành công!')
+        fetchStories()
+      } else {
+        toast.error('Có lỗi xảy ra, vui lòng thử lại!')
+      }
+
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
   return (
     <div className='fixed inset-0 z-110 min-h-screen bg-black/80 backdrop-blur text-white
@@ -75,14 +139,12 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
             <input type="file" name="" id=""
               accept='image/*, video/*'
               className='hidden'
-              onChange={(e) => { handleMediaUpload(e); setMode('media') }} />
+              onChange={handleMediaUpload} />
             <Upload size={18} />Photo/Video
           </label>
         </div>
         <button onClick={() => toast.promise(handleCreateStory(), {
-          loading: 'Saving...',
-          success: <p>Story Added</p>,
-          error: e => <p>{e.message}</p>
+          loading: 'Saving...'
         })}
           className='flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded 
         bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700

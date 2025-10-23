@@ -3,18 +3,19 @@ import imagekit from "../configs/imageKit.js";
 import fs from "fs";
 import Story from "../models/Story.js";
 import { inngest } from "../inngest/index.js";
+import User from "../models/User.js";
 
 // Thêm Story
 export const addStory = async (req, res) => {
   try {
     const userId = req.userId;
     const { content, media_type, background_color } = req.body;
-    const media = req.files;
+    const media = req.file;
 
     let media_url = '';
 
-    if (media_type === 'image' && media_type === 'video') {
-      const fileBuffer = fs.ReadFileSync(media.path)
+    if (media_type === 'image' || media_type === 'video') {
+      const fileBuffer = fs.readFileSync(media.path)
       const response = await imagekit.upload({
         file: fileBuffer,
         fileName: media.originalname,

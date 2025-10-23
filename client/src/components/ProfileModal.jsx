@@ -1,9 +1,17 @@
 import React, { useState } from 'react'
-import { dummyUserData } from '../assets/assets'
 import { Pencil } from 'lucide-react'
+import { useDispatch, useSelector } from 'react-redux'
+import { updateUser } from '../features/user/userSlice'
+import { useAuth } from '@clerk/clerk-react'
+import toast from 'react-hot-toast'
+
 
 const ProfileModal = ({ setShowEdit }) => {
-  const user = dummyUserData
+
+  const dispatch = useDispatch()
+  const { getToken } = useAuth()
+
+  const user = useSelector((state) => state.user.value)
   const [editForm, setEditForm] = useState({
     full_name: user.full_name,
     username: user.username,
@@ -13,14 +21,38 @@ const ProfileModal = ({ setShowEdit }) => {
     location: user.location,
   })
 
-  const handleSaveProfile = () => { }
+  const handleSaveProfile = async (e) => {
+    e.preventDefault()
+    try {
+
+      const userData = new FormData()
+      const { full_name, username, bio, profile_picture, cover_photo, location } = editForm
+      userData.append('full_name', full_name)
+      userData.append('username', username)
+      userData.append('bio', bio)
+      userData.append('location', location)
+      profile_picture && userData.append('profile', profile_picture)
+      cover_photo && userData.append('cover', cover_photo)
+      const token = await getToken()
+      dispatch(updateUser({ userData, token }))
+
+      setShowEdit(false)
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
   return (
     <div className='fixed inset-0 z-110 h-screen overflow-y-scroll bg-black/50'>
       <div className='max-w-2xl sm:py-6 mx-auto'>
         <div className='bg-white rounded-lg shadow p-6'>
           <h1 className='text-2xl font-bold text-gray-900 mb-6'>Cập nhật hồ sơ</h1>
 
-          <form className='space-y-4' onSubmit={handleSaveProfile}>
+          <form className='space-y-4' onSubmit={e => toast.promise(
+            handleSaveProfile(e), {
+            loading: 'Đang lưu thay đổi...',
+            success: 'Hồ sơ đã được cập nhật!',
+            error: 'Lỗi khi cập nhật hồ sơ!',
+          })}>
 
             {/* Cover Photo */}
             <div className='flex flex-col items-start gap-3'>

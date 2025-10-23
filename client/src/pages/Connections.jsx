@@ -1,24 +1,83 @@
 import React, { useState } from 'react'
-import {
-  dummyConnectionsData as connections,
-  dummyFollowersData as followers,
-  dummyFollowingData as following,
-  dummyPendingConnectionsData as pendingConnections
-} from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import { MessageSquare, UserCheck, UserPlus, UserRoundPen, Users } from 'lucide-react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useAuth } from '@clerk/clerk-react'
+import { useEffect } from 'react'
+import { fetchConnections } from '../features/connections/connectionsSlice'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
+
 
 const Connections = () => {
 
   const navigate = useNavigate()
   const [currentTab, setCurrentTab] = useState('Followers')
+  const { getToken } = useAuth()
+  const dispatch = useDispatch()
+
+  const {
+    connections,
+    pendingConnections,
+    followers,
+    following
+  } = useSelector((state) => state.connections);
+
 
   const dataArray = [
     { label: 'Followers', value: followers, icon: Users },
     { label: 'Following', value: following, icon: UserCheck },
-    { label: 'Connections', value: connections, icon: UserRoundPen },
     { label: 'Pending', value: pendingConnections, icon: UserPlus },
+    { label: 'Connections', value: connections, icon: UserRoundPen },
   ]
+
+
+  const acceptConnection = async (userId) => {
+    try {
+      const { data } = await api.post('/api/user/accept', { id: userId }, {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`
+        }
+      })
+
+      if (data.success) {
+        toast.success(data.message)
+        dispatch(fetchConnections(await getToken()))
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleUnfollow = async (userId) => {
+    try {
+      const { data } = await api.post('/api/user/unfollow', { id: userId }, {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`
+        }
+      })
+
+      if (data.success) {
+        toast.success(data.message)
+        dispatch(fetchConnections(await getToken()))
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+
+  useEffect(() => {
+    getToken().then(token => {
+      dispatch(fetchConnections(token))
+    })
+  }, [getToken, dispatch])
+
+
   return (
     <div className='min-h-screen relative bg-slate-50'>
       <div className='max-w-6xl mx-auto p-6'>
@@ -68,7 +127,7 @@ const Connections = () => {
               <div className='flex-1'>
                 <p className='text-slate-700 font-medium'>{user.full_name}</p>
                 <p className='text-slate-500'>@{user.username}</p>
-                <p className='text-slate-600'>{user.bio.slice(0, 30)}...</p>
+                <p className='text-slate-600'>{user.bio ? user.bio.slice(0, 30) : 'Chưa có giới thiệu'}...</p>
                 <div className='flex max-sm:flex-col gap-2 mt-4'>
                   {
                     <button onClick={() => navigate(`/profile/${user._id}`)}
@@ -79,7 +138,8 @@ const Connections = () => {
                   }
                   {
                     currentTab === 'Following' && (
-                      <button className='w-full p-2 text-sm rounded  bg-slate-100 text-black
+                      <button onClick={() => handleUnfollow(user._id)}
+                        className='w-full p-2 text-sm rounded  bg-slate-100 text-black
                     hover:bg-slate-200 active:scale-95 transition cursor-pointer'>
                         Unfollow
                       </button>
@@ -87,7 +147,8 @@ const Connections = () => {
                   }
                   {
                     currentTab === 'Pending' && (
-                      <button className='w-full p-2 text-sm rounded  bg-slate-100 text-black
+                      <button onClick={() => acceptConnection(user._id)}
+                        className='w-full p-2 text-sm rounded  bg-slate-100 text-black
                     hover:bg-slate-200 active:scale-95 transition cursor-pointer'>
                         Accept
                       </button>
