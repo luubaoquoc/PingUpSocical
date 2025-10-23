@@ -58,8 +58,8 @@ const CreatePost = () => {
       <div className='max-w-6xl mx-auto p-6'>
         {/* Title */}
         <div className='mb-8'>
-          <h1 className='text-3xl font-bold text-slate-900 mb-2'>Create Post</h1>
-          <p className='text-slate-600'>Share your thoughts with the world!</p>
+          <h1 className='text-3xl font-bold text-slate-900 mb-2'>Đăng bài</h1>
+          <p className='text-slate-600'>Chia sẻ suy nghĩ của bạn với thế giới!</p>
         </div>
 
         {/* Form */}
@@ -76,7 +76,7 @@ const CreatePost = () => {
           {/* Textarea */}
           <textarea name="" id="" className='w-full resize-none max-h-20 mt-4 text-sm outline-none
           placeholder-gray-400'
-            placeholder="What's on your mind?"
+            placeholder="Bạn đang nghĩ gì?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
@@ -117,7 +117,7 @@ const CreatePost = () => {
               className='text-sm bg-gradient-to-r from-indigo-500 to-purple-600
             hover:from-indigo-600 hover:to-purple-700 active:scale-95 text-white font-medium
             px-8 py-2 rounded-md cursor-pointer'>
-              Publish Post
+              Đăng bài
             </button>
           </div>
         </div>
